@@ -8,7 +8,6 @@ set.seed(2)
 phy <- tree.bd(c(.1, .03), max.taxa=100)
 
 # construct a likelihood function
-
 lik <- make.bd(phy)
 
 argnames(lik)
