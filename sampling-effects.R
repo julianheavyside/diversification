@@ -1,21 +1,24 @@
 rm(list=ls())
 library(diversitree)
+library(ape)
+library(geiger)
 
-# 3: Markov models of discrete character evolution
+### Effects of sampling (missing data) on parameters of models of discrete character evolution
+# this focuses on continuous-time Markov models of discrete binary character evolution, which hold diversification rates constant and allow the character state of a lineage to transition from state to state
+# we are specifically interested in producing MLEs for the following two parameters: q01 = transition rate from state 0 to state 1, and q10 = transition rate from state 1 to state 0
+# skip to line 50 for simulations of trees with missing data
 
-# we are interested in producing MLEs for the following two parameters: q01 = transition rate from state 0 to state 1, and q10 = transition rate from state 1 to state 0
-
-# simulate a binary trait (state 0 and state 1) on a birth-death tree
+# start by simulating a tree with 2000 tips, lambda = 0.2, and mu = 0.03
 set.seed(2)
-phy <- tree.bd(c(.1, .03), max.taxa=50)
-# plot(phy)
+tree <- tree.bd(c(.2, .03), max.taxa=2000)
 
-# simulate the binary trait where rate of evolution from state 0 to state 1 within a lineage is 0.1, and 0.2 for state 1 to state 0. Start the tree in state 0 (x0=0). Use a Mk2 model of character evolution
+# simulate a binary trait exhibiting a rate of evolution from state 0 to state 1 within a lineage of 0.1, and 0.2 for state 1 to state 0. Use a Mk2 (Markov binary character) model of character evolution
 set.seed(1)
-states <- sim.character(phy, c(.1, .2), x0=0, model="mk2")
+states <- sim.character(tree, c(.1, .2), model="mk2")
+length(which(states==1))
 
 # build a likelihood function based on Mk2 model (used to find likelihood of parameter values: probability of the observed distribution of character states given that the tree evolved according to a given model of character evolution and/or diversification)
-lik.mk2 <- make.mk2(phy, states)
+lik.mk2 <- make.mk2(tree, states)
 
 # run ML analysis using an initial parameter guess of (0.1, 0.1)
 # I tried with initial guesses ranging from (0.1, 0.9) to (0.9, 0.1) and similar MLEs are produced in each case
@@ -44,23 +47,11 @@ anova(fit.mk2, mk1=fit.mk1)
 # we can conclude that the asymmetric Markov model fits better; the rate of evolution from state 1 to state 0 is greater than that of state 0 to state 1
 
 
-plot(phy, show.tip.label=FALSE, no.margin=TRUE)
+
+
+
+
+plot(tree, show.tip.label=FALSE, no.margin=TRUE)
 col <- c("#004165", "#eaab00")
 tiplabels(col=col[states+1], pch=19, adj=1) # use state, but add 1 to give 1s and 2s instead of 0s and 1s
 nodelabels(col=col[attr(states, "node.state")+1], pch=19)
-
-
-########################################################################
-# 3.1: Drawing samples with MCMC
-prior.exp <- make.prior.exponential(10)
-
-set.seed(1)
-samples <- mcmc(lik.mk2, c(.1, .1), nsteps=5000, prior=prior.exp, w=.1, print.every=0)
-samples <- subset(samples, i > 500)
-
-mean(samples$q01 > samples$q10)
-profiles.plot(samples[c("q01", "q10")], col.line=col, las=1, legend.pos="topright")
-abline(v=c(.1, .2), col=col)
-
-
-
