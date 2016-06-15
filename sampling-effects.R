@@ -6,7 +6,6 @@ library(geiger)
 ### Effects of sampling (missing data) on parameters of models of discrete character evolution
 # this focuses on continuous-time Markov models of discrete binary character evolution, which hold diversification rates constant and allow the character state of a lineage to transition from state to state
 # we are specifically interested in producing MLEs for the following two parameters: q01 = transition rate from state 0 to state 1, and q10 = transition rate from state 1 to state 0
-# skip to line 50 for simulations of trees with missing data
 
 # start by simulating a tree with 2000 tips, lambda = 0.2, and mu = 0.03
 set.seed(2)
@@ -52,23 +51,35 @@ col <- c("#004165", "#eaab00")
 tiplabels(col=col[states+1], pch=19, adj=1) # use state, but add 1 to give 1s and 2s instead of 0s and 1s
 nodelabels(col=col[attr(states, "node.state")+1], pch=19)
 
-######
-### effects of dropping data randomly from a tree
+########################################################
+### effects of dropping data from a tree
+########################################################
+
 # how sensitive are parameters to varying amounts of missing data
 # how does tree size affect this
-# 
+# what about when:
+#        q01=q10
+#        q01>q10
 
-# simulate a tree as before
+###########################
+### For trees with q01=q10
+###########################
+
+# simulate a tree as before, with equal rate of character evolution in both directions
 set.seed(2)
 tree <- tree.bd(c(.2, .03), max.taxa=2000)
-states <- sim.character(tree, pars=c(.1, .2), model="mk2") #q01=0.1, q10=0.1
+set.seed(1)
+states <- sim.character(tree, pars=c(.1, .1), model="mk2") #q01=0.1, q10=0.1
 length(which(states==0))
 
 # build likelihood model and run ML analysis with initial guess
 lik <- make.mk2(tree, states)
 fit <- find.mle(lik, x.init=c(.1, .1))
 
-# store parameter MLE
+# MLEs for character evolution rates
+coef(fit)
+
+# store MLEs
 r01 <- fit$par[1] # MLE of q01
 r10 <- fit$par[2] # MLE of q10
 
@@ -90,17 +101,86 @@ for (i in 1:length(s)){
   r10 <- c(r10, r10es)
 }
 
+# visualize what happens to our parameter estimates when data is missing
+plot(s, r01)
+plot(s, r10)
+
+# compare our model to a null model
+lik_diff <- make.mk2(tree, states)
+lik_same <- constrain(lik_diff, q01~q10)
+
+fit_diff <- find.mle(lik_diff, c(.1, .1))
+fir_same <- find.mle(lik_same, .1)
+anova(fit_diff, fit_same)
+
+# do it for trees missing varying amounts of data
+
+
+
+###################
+# If q01<q10
+###################
+# simulate a tree as before, but with lower rate of character evolution from state 0 to 1
+set.seed(2)
+tree <- tree.bd(c(.2, .03), max.taxa=2000)
+set.seed(1)
+states <- sim.character(tree, pars=c(.1, .3), model="mk2")
+length(which(states==0))
+
+# build likelihood model and run ML analysis with initial guess
+lik <- make.mk2(tree, states)
+fit <- find.mle(lik, x.init=c(.1, .1))
+
+# MLEs for character evolution rates
+coef(fit)
+
+# store MLEs
+r01 <- fit$par[1] # MLE of q01
+r10 <- fit$par[2] # MLE of q10
+
+# build trees to represent 10, 20,..., 1980 tips missing from the original tree
+# first, make a sequence to iterate the loop across various quantities of missing data
+s <- seq(10, 1990, by=10)
+length(s)
+
+# use a loop to simulate and analyse many trees, each containing 10 fewer tips than the previous run
+for (i in 1:length(s)){
+  to_drop <- sample(tree$tip.label, size=s[i])
+  new_tree <- drop.tip(tree, tip=to_drop)
+  new_states <- states[new_tree$tip.label]
+  new_lik <- make.mk2(new_tree, new_states)
+  new_fit <- find.mle(new_lik, x.init=c(.1, .1))
+  r01es <- new_fit$par[1]
+  r10es <- new_fit$par[2]
+  r01 <- c(r01, r01es)
+  r10 <- c(r10, r10es)
+}
+
+length(r01)
+
+plot(c(s, 2000), r10)
+
 ### effects of biased sampling data from a tree
 # bias in the probability of a tip being dropped due to its character state
 # how sensitive are parameters to varying amounts of missing biased data
 # how does tree size affect this
 
-# taxa in state 1 have P=0.2 of being sampled
-bias <- ifelse(states==1, .2, .8)
-to_drop <- sample(tree$tip.label, size=s[i], prob=bias)
+# a function that takes in list of character states, a state on which to focus the bias, and a probability of being dropped, and returns a vector of probabilities to pass to sample()
+# e.g. for bias(states, 0, 0.6), Pr[dropping taxa with state=0] = 0.6
+bias <- function(d, s=1, p=.5){
+  return(as.numeric(ifelse(d==s, p, 1-p)))
+}
+
+set.seed(2)
+tree <- tree.bd(c(.2, .03), max.taxa=2000)
+set.seed(1)
+states <- sim.character(tree, c(.1, .2), model="mk2")
+
+# taxa in state 1 have P=0.2 of being missed in a sample (dropped from the tree)
+p.drop <- bias(states, 1, 0.2)
 
 for (i in 1:length(s)){
-  to_drop <- sample(tree$tip.label, size=s[i], prob=bias)
+  to_drop <- sample(tree$tip.label, size=s[i], prob=p.drop)
   new_tree <- drop.tip(tree, tip=to_drop)
   new_states <- states[new_tree$tip.label]
   new_lik <- make.mk2(new_tree, new_states)
@@ -114,23 +194,23 @@ for (i in 1:length(s)){
 ########
 set.seed(2)
 tree <- tree.bd(c(.2, .03), max.taxa=40)
+set.seed(1)
 states <- sim.character(tree, pars=c(.1, .1), model="mk2")
+length(which(states==1))
 
-to_drop <- sample(tree$tip.label, size=25)
+to_drop <- sample(tree$tip.label, size=20)
 new_tree <- drop.tip(tree, tip=to_drop)
 new_states <- states[new_tree$tip.label]
+new_states
 
-bias <- ifelse(states==1, .8, .2) # P[dropping taxa in state 1]=0.8
+p.drop <- bias(states, 1, 0.5)
+p.drop
 
-# a function that takes in list of character states, a state on which to focus the bias, and a probability of being dropped
-# e.g. for bias(states, 0, 0.6), Pr[dropping taxa with state=0] = 0.6
-bias <- function(d, s=1, p=.5){
-  return(ifelse(d==s, p, 1-p))
-}
 
-to_drop <- sample(tree$tip.label, size=25, prob=as.numeric(bias))
+to_drop <- sample(tree$tip.label, size=20, prob=p.drop)
 new_tree <- drop.tip(tree, tip=to_drop)
 new_states <- states[new_tree$tip.label]
+new_states
 
 plot(tree, show.tip.label=FALSE, no.margin=TRUE)
 col <- c("#004165", "#eaab00")
