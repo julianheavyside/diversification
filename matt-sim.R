@@ -22,8 +22,8 @@ r <- fit$par[1]
 for (i in 1:length(s)){
   to_drop <- sample(tree$tip.label, size=s[i])
   new_tree <- drop.tip(tree, tip=to_drop)
-  new_dat <- states[new_tree$tip.label]
-  new_lik <- make.mk2(new_tree, new_dat)
+  new_states <- states[new_tree$tip.label]
+  new_lik <- make.mk2(new_tree, new_states)
   new_fit <- find.mle(new_lik, x.init=c(.1, .1))
   res <- new_fit$par[1]
   r <- c(r, res)
