@@ -1,22 +1,26 @@
 rm(list=ls())
 library(diversitree)
 
-source("supporting-functions.R")
+# not actually using anything yet
+# source("supporting-functions.R")
 
 trees <- lapply(1:10, function(i) 
-  tree.bd(pars=c(1, 0), max.taxa=20)) # 10 trees
+  tree.bd(pars=c(1, 0), max.taxa=200)) # 10 trees
 
-states <- sapply(1:length(trees), function(i) 
+states <- lapply(1:length(trees), function(i) 
   sim.character(trees[[i]], pars=c(1, 1), model="mk2"))
 
-trees_states <- matrix(c(trees, states), nrow=length(trees), ncol=2)
+# trees_states <- matrix(c(trees, states), nrow=length(trees), ncol=2)
 
-liks <- lapply(trees_states, make.mk2)
+liks <- lapply(1:length(trees), function(i)
+  make.mk2(trees[[i]], states[[i]]))
 
-fits <- lapply(liks, find.mle, x.init=c(1, 1))
+fits <- lapply(1:length(trees), function(i)
+  find.mle(liks[[i]], x.init=c(1, 1)))
 
-
-
+res <- lapply(1:length(trees), function(i)
+  fits[[i]]$par[1])
+res
 
 
 
