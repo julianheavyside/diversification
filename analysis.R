@@ -3,11 +3,37 @@ library(diversitree)
 
 source("supporting-functions.R")
 
+trees <- lapply(1:10, function(i) 
+  tree.bd(pars=c(1, 0), max.taxa=20)) # 10 trees
+
+states <- sapply(1:length(trees), function(i) 
+  sim.character(trees[[i]], pars=c(1, 1), model="mk2"))
+
+trees_states <- matrix(c(trees, states), nrow=length(trees), ncol=2)
+
+liks <- lapply(trees_states, make.mk2)
+
+fits <- lapply(liks, find.mle, x.init=c(1, 1))
+
+
+
+
+
+
+
+
+
+
+
+
+
 # simulate "n" trees with "tips" taxa
-trees <- fn.for.trees(n=15, tips=50)
+trees1 <- fn.for.tree.bd(n=15, tips=50)
+
+trees2 <- fn.for.trees(n=15, tips=50)
 
 # evolve binary trait states for each tree, given a trait evo model and transition rates
-states <- fn.for.sim.character(trees, q.pars=c(.1, .2))
+states <- fn.for.sim.character(trees1, q.pars=c(.1, .2))
 
 # build likelihood function for each tree
 liks <- fn.for.make.mk2(trees=trees, states=states)
@@ -16,8 +42,6 @@ liks <- fn.for.make.mk2(trees=trees, states=states)
 rates <- fn.for.find.mle(liks=liks)
 rates
 
-# get parameter estimates for n trees at once
-estimates <- q.estimates(n=15, tips=15, q.pars=c(.1, .3))
 
   
 

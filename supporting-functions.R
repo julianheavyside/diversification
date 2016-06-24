@@ -1,4 +1,3 @@
-
 # FUNCTION PARAMETERS USED
 # n: number of trees, Num
 # tips: number of taxa in tree, Num
