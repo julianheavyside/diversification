@@ -1,16 +1,15 @@
 rm(list=ls())
 library(diversitree)
 
-# not actually using anything yet
+# not actually using any supporting functions yet, and it's a mess
 # source("supporting-functions.R")
 
-trees <- lapply(1:10, function(i) 
+# simulate some trees, specify how many, and how big
+trees <- lapply(c(1:10), function(i)
   tree.bd(pars=c(1, 0), max.taxa=200)) # 10 trees
 
-states <- lapply(1:length(trees), function(i) 
-  sim.character(trees[[i]], pars=c(1, 1), model="mk2"))
-
-# trees_states <- matrix(c(trees, states), nrow=length(trees), ncol=2)
+states <- lapply(trees, function(i) 
+  sim.character(i, pars=c(1, 1), model="mk2"))
 
 liks <- lapply(1:length(trees), function(i)
   make.mk2(trees[[i]], states[[i]]))
@@ -22,7 +21,24 @@ res <- lapply(1:length(trees), function(i)
   fits[[i]]$par[1])
 res
 
+get_sim_pars <- function(treesize, pars=c(1,1)){
+  t <- tree.bd(pars=c(1,0), max.taxa=treesize)
+  d <- sim.character(t, pars=pars, model="mk2")
+  lik <- make.mk2(t,d)
+  as.numeric(find.mle(lik, x.init=pars)$par[1])
+}
 
+res <- sapply(c(1:5), function(x) get_sim_pars(2000))
+res
+
+pars_list <- list()
+pars <- seq(0.02, 1, by=0.02)
+for (i in 1:length(pars)){
+  pars_list[[i]] <- c(pars[i], pars[i])
+}
+
+
+res2 <- lapply(pars_list, function(x) get_sim_pars(100, x))
 
 
 
