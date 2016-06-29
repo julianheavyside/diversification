@@ -9,6 +9,7 @@ bias <- function(d, p=.5){
 get_sim_pars <- function(treesize, pars=c(1,1), drop){
   t <- tree.bd(pars=c(1,0), max.taxa=treesize)
   d <- sim.character(t, pars=pars, model="mk2")
+  prob <- bias(d, p=p_bias)
   to_drop <- sample(t$tip.label, size=drop)
   new_t <- drop.tip(t, tip=to_drop)
   new_d <- sim.character(new_t, pars=pars, model="mk2")
