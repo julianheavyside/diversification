@@ -1,14 +1,19 @@
 rm(list=ls())
-dev.off()
-
 library(diversitree)
-
 source("supporting-functions.R")
 
 # estimate rate parameter for multiple trees
-qs <- c(1, 1)
-res <- sapply(c(1:20), function(x) get_sim_pars(treesize=500, pars=qs))
+treesize <- 100
+sub <- seq(0, treesize-10, by=10)
+
+# res <- sapply(sub, function(x) get_sim_pars(treesize=treesize, pars=c(1, 1), drop=x))
+res <- list()
+for(i in seq_along(sub)){
+  sapply(c(1:10), function(x) get_sim_pars(treesize=treesize, pars=c(1, 1), drop=sub[i]))
+}
+
 mean(res)
+
 sd(res)
 
 plot(density(res), main="", xlab="Estimate", ylab="Density")
@@ -17,7 +22,7 @@ plot(density(res), main="", xlab="Estimate", ylab="Density")
 # use a range of rates to simulate trees, and produce estimates for them
 pars_list <- list()
 pars <- seq(0.02, 1, by=0.02)
-for (i in 1:length(pars)){
+for (i in seq_along(pars)){
   pars_list[[i]] <- c(pars[i], 1)
 }
 
