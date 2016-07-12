@@ -3,13 +3,13 @@ library(diversitree)
 source("supporting-functions.R")
 
 # estimate rate parameter for multiple trees
-treenum <- 100 # how many trees to simulate
+treenum <- 50 # how many trees to simulate
 treesize <- 500 # how many taxa in each tree
 p_bias <- 0.5
 sub <- seq(0, treesize-(treesize/10), by=treesize/10)
 sub
 
-# res <- sapply(sub, function(x) get_sim_pars(treesize=treesize, pars=c(1, 1), drop=x))
+# 
 res <- list()
 for(i in seq_along(sub)){
   res[[i]] <- sapply(c(1:treenum), function(x) get_sim_pars(treesize=treesize, pars=c(1, 1), drop=sub[i]))
@@ -29,7 +29,9 @@ for(i in seq_along(sub)) {
 }
 
 mean_diff <- lapply(res_diff, mean)
-plot(rev(sub), rev(mean_diff))
+mean_diff
+rev_sub <- sub[rev(order(sub))]
+plot(rev_sub, mean_diff)
 
 sd_diff <- lapply(res_diff, sd)
 plot(sub, sd_diff)
