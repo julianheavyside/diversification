@@ -3,8 +3,6 @@ bias <- function(d, p=.5){
   as.numeric(ifelse(d==1, p, 1-p))
 }
 
-# prob <- lapply(d, function(x) as.numeric(ifelse(d==1, bias, 1-bias)))
-
 # simulate a tree, and then estimate the rate parameter for that tree
 get_sim_pars <- function(treesize, pars=c(1,1), drop){
   t <- tree.bd(pars=c(1,0), max.taxa=treesize)
