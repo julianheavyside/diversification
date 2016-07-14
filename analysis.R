@@ -3,21 +3,19 @@ library(diversitree)
 source("supporting-functions.R")
 
 # estimate rate parameter for multiple trees
-treenum <- 50 # how many trees to simulate
-treesize <- 500 # how many taxa in each tree
+treenum <- 100 # how many trees to simulate
+treesize <- 200 # how many taxa in each tree
 p_bias <- 0.5
 sub <- seq(0, treesize-(treesize/10), by=treesize/10)
-sub
 
 # 
 res <- list()
 for(i in seq_along(sub)){
-  res[[i]] <- sapply(c(1:treenum), function(x) get_sim_pars(treesize=treesize, pars=c(1, 1), drop=sub[i]))
+  res[[i]] <- sapply(c(1:treenum), function(x) get_sim_pars(treesize=treesize, pars=c(2, 1), drop=sub[i]))
 }
 
 # the mean of all estimates, for each tier of tree subsampling
 mean_res <- lapply(res, mean)
-mean_res
 
 res_diff <- res # easy way start with a list that is the same size and shape as res
 
@@ -29,34 +27,16 @@ for(i in seq_along(sub)) {
 }
 
 mean_diff <- lapply(res_diff, mean)
-mean_diff
 rev_sub <- sub[rev(order(sub))]
-plot(rev_sub, mean_diff)
+plot(sub, mean_diff, ylim = c(0, range(mean_diff)[2] + 10))
 
-sd_diff <- lapply(res_diff, sd)
-plot(sub, sd_diff)
+# add standard error bars about each mean
+# standard error for diff between estimates and pars, for each level of sub
+se_diff <- lapply(res_diff, standard.error)
 
-
-
-
-
-# use a range of rates to simulate trees, and produce estimates for them
-pars_list <- list()
-pars <- seq(0.02, 1, by=0.02)
-for (i in seq_along(pars)){
-  pars_list[[i]] <- c(pars[i], 1)
+# plot flat arrows above and below each mean, each as long as the SE
+for(i in seq_along(sub)){
+  arrows(sub[i], mean_diff[[i]] - se_diff[[i]], 
+         sub[i], mean_diff[[i]] + se_diff[[i]], 
+         length = .1, angle = 90, code = 3)
 }
-
-res2 <- lapply(pars_list, function(x) get_sim_pars(100, x))
-
-# extract 1st element (q01) from each set of pars
-pars_q01 <- lapply(pars_list, '[[', 1)
-
-# plot distribution of differences between estimate and true parameter
-plot(density(as.numeric(res2)-as.numeric(pars_q01)))
-
-
-
-
-
-
