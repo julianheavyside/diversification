@@ -15,6 +15,9 @@ get_sim_pars <- function(treesize, pars=c(1,1), drop){
   as.numeric(find.mle(lik, x.init=pars)$par[1])
 }
 
-
+# standard error function
+standard.error <- function(x){
+  sqrt(var(x)/length(x))
+}
 
 
