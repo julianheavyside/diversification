@@ -3,8 +3,8 @@ library(diversitree)
 source("supporting-functions.R")
 
 # estimate rate parameter for multiple trees
-treenum <- 100 # how many trees to simulate
-treesize <- 200 # how many taxa in each tree
+treenum <- 1000 # how many trees to simulate
+treesize <- 500 # how many taxa in each tree
 p_bias <- 0.5
 sub <- seq(0, treesize-(treesize/10), by=treesize/10)
 
@@ -26,17 +26,20 @@ for(i in seq_along(sub)) {
   }
 }
 
+# get the average difference
 mean_diff <- lapply(res_diff, mean)
 rev_sub <- sub[rev(order(sub))]
-plot(sub, mean_diff, ylim = c(0, range(mean_diff)[2] + 10))
 
-# add standard error bars about each mean
 # standard error for diff between estimates and pars, for each level of sub
 se_diff <- lapply(res_diff, standard.error)
 
+# adjust ylim to accomodate large error bars
+plot(rev_sub, mean_diff, ylim = c(0, range(mean_diff)[2] + max(unlist(se_diff))))
+
+# add standard error bars about each mean
 # plot flat arrows above and below each mean, each as long as the SE
-for(i in seq_along(sub)){
-  arrows(sub[i], mean_diff[[i]] - se_diff[[i]], 
-         sub[i], mean_diff[[i]] + se_diff[[i]], 
+for(i in seq_along(rev_sub)){
+  arrows(rev_sub[i], mean_diff[[i]] - se_diff[[i]], 
+         rev_sub[i], mean_diff[[i]] + se_diff[[i]], 
          length = .1, angle = 90, code = 3)
 }
