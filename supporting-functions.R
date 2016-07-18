@@ -10,7 +10,7 @@ get_sim_pars <- function(treesize, pars=c(1,1), drop){
   prob <- bias(d, p=p_bias)
   to_drop <- sample(t$tip.label, size=drop)
   new_t <- drop.tip(t, tip=to_drop)
-  new_d <- sim.character(new_t, pars=pars, model="mk2")
+  new_d <- d[new_t$tip.label]
   lik <- make.mk2(new_t, new_d)
   as.numeric(find.mle(lik, x.init=pars)$par[1])
 }
