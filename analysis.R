@@ -3,7 +3,7 @@ library(diversitree)
 source("supporting-functions.R")
 
 # estimate rate parameter for multiple trees
-treenum <- 100 # how many trees to simulate
+treenum <- 3000 # how many trees to simulate
 treesize <- 500 # how many taxa in each tree
 p_bias <- 0.5
 sub <- seq(0, treesize-(treesize/10), by=treesize/10)
@@ -45,8 +45,8 @@ library(diversitree)
 source("supporting-functions.R")
 
 
-## MK models
 
+## MK models
 
 ## Run this over a bunch of tree sizes and sampling
 ## Get 100 results at each at each
@@ -60,7 +60,7 @@ res <- data.frame()
 for (i in 1:length(t_size)){
   for (j in 1:length(samp)){
     print(c(i,j))
-    out <- simulate_mk2_rsamp(10, t_size[i], samp[j])
+    out <- simulate_mk2_rsamp(100, t_size[i], samp[j])
     res <- rbind(res,out)
   }
 }
