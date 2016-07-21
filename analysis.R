@@ -77,14 +77,23 @@ for (i in seq_along(pars)){
   pars_list[[i]] <- c(pars[i], 1) # length = 20
 }
 
-## just loop it. Get 100 results at each (produces 20*16*20*100iterations=640000 observations)
+# ... over a range of biases towards dropping tips with state=1
+bias <- seq(0.25, 1, 0.25)
+
+## just loop it. Get 100 results at each (produces 20*16*20*4*100iterations=2560000 observations)
 res <- data.frame()
-for (i in seq_along(t_size)){
-  for (j in seq_along(samp)){
-    for (k in seq_along(pars_list)){
-      print(c(i,j,k))
-      out <- simulate_mk2_rsamp(i=100, n=t_size[i], s=samp[j], r=pars_list[[k]])
-      res <- rbind(res,out)
+for (i in seq_along(t_size)){ # simulate over range of tree sizes
+  for (j in seq_along(samp)){ # ...over range of sampling fractions
+    for (k in seq_along(pars_list)){ # ...over range of parameter values
+      for (l in seq_along(bias)){ # ...over a range of biases towards state=1
+        print(c(i,j,k,l))
+        out <- simulate_mk2_rsamp(i=100, 
+                                  n=t_size[i], 
+                                  s=samp[j], 
+                                  r=pars_list[[k]], 
+                                  b=bias[l])
+        res <- rbind(res,out)
+      }
     }
   }
 }

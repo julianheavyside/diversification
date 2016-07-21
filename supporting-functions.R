@@ -41,10 +41,10 @@ fit_mk2 <- function(x){
   out
 }
 
-sample_phydat <- function(x, s){
+sample_phydat <- function(x, s, b){
   n <- Ntip(x$t)
-  # prob <- bias(x$d, p=p_bias)
-  drop <- sample(x$t$tip.label, round((1-s)*n))
+  prob <- bias(x$d, p=b)
+  drop <- sample(x$t$tip.label, round((1-s)*n), prob)
   new_t <- drop.tip(x$t, tip=drop)
   new_d <- x$d[new_t$tip.label]
   list(t=new_t, d=new_d, r=x$r)
@@ -52,12 +52,12 @@ sample_phydat <- function(x, s){
 
 ## Using rejection algorithm to get rid of failures
 ## Subsample without bias
-simulate_mk2_rsamp <- function(i, n, s, r=c(0.1,0.1)){
+simulate_mk2_rsamp <- function(i, n, s, r=c(0.1,0.1), b=0.5){
   out <- data.frame()
   while(1){
     dat  <- simulate_mk2(n, r)
     if (!is.null(dat)) {
-      sam  <- sample_phydat(dat, s)
+      sam  <- sample_phydat(dat, s, b)
       if (length(unique(sam$d)) !=  1) {
         fit  <- fit_mk2(dat)
         sfit <- fit_mk2(sam)
