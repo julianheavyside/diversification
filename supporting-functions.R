@@ -1,9 +1,9 @@
-# produce bias to be used for subsampling
+## produce bias to be used for subsampling
 bias <- function(d, p=.5){
   as.numeric(ifelse(d==1, p, 1-p))
 }
 
-# simulate a tree, and then estimate the rate parameter for that tree
+## simulate a tree, and then estimate the rate parameter for that tree
 get_sim_pars <- function(treesize, pars=c(1,1), drop){
   t <- tree.bd(pars=c(1,0), max.taxa=treesize)
   d <- sim.character(t, pars=pars, model="mk2")
@@ -15,7 +15,7 @@ get_sim_pars <- function(treesize, pars=c(1,1), drop){
   as.numeric(find.mle(lik, x.init=pars)$par[1])
 }
 
-# standard error function
+## standard error function
 standard.error <- function(x){
   sqrt(var(x)/length(x))
 }
@@ -62,14 +62,13 @@ simulate_mk2_rsamp <- function(i, n, s, r=c(0.1,0.1)){
         fit  <- fit_mk2(dat)
         sfit <- fit_mk2(sam)
         ## Collect and clean output
-        res <- c(fit, s, sfit[c(1, 4, 5)])
+        res <- c(fit, s, sfit[c(1, 4, 5)]) #only summarize new info
         out <- rbind(out, res)
       }
     }
     if (nrow(out) == i)
       break()
   }
-  
   names(out) <- c("n", "sim_q01","sim_q10", "est_q01", "est_q10", "samp_f", "n_samp", "est_q01_samp", "est_q10_samp")
   out
 }
