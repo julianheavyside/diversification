@@ -71,16 +71,25 @@ t_size <- seq(50, 1000, 50) # length = 20
 samp <- seq(1, .25, -.05) # length = 16
 
 # ... over range of parameter (q01 and q10) values
-pars_list <- list()
-pars <- seq(0.05, 1, by=0.05)
+pars_list_diff <- list()
+pars_list_same <- list()
+pars <- seq(0.1, 1, by=0.1)
+rev_pars <- rev(pars)
+# different values for q01 and q10
 for (i in seq_along(pars)){
-  pars_list[[i]] <- c(pars[i], 1) # length = 20
+  pars_list_diff[[i]] <- c(pars[i], rev_pars[i]) 
 }
+# same values for q01 and q10
+for (i in seq_along(pars)){
+  pars_list_same[[i]] <- c(pars[i], pars[i])
+}
+# join both lists to make a full pars_list over a range of values, for situations with same and different values
+pars_list <- c(pars_list_diff, pars_list_same) # length = 20
 
 # ... over a range of biases towards dropping tips with state=1
 bias <- seq(0.25, 1, 0.25)
 
-## just loop it. Get 100 results at each (produces 20*16*20*4*100iterations=2560000 observations)
+## just loop it. Get 100 results at each (produces 20*16*40*4*100iterations=2560000 observations)
 res <- data.frame()
 for (i in seq_along(t_size)){ # simulate over range of tree sizes
   for (j in seq_along(samp)){ # ...over range of sampling fractions
