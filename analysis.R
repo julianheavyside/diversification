@@ -6,10 +6,8 @@ library(diversitree)
 source("supporting-functions.R")
 
 
+#
 # trees of single size ----------------------------------------------------
-
-
-
 ##############################################################
 # ability to estimate rate parameters when data is missing
 # for trees of a single size
@@ -50,17 +48,11 @@ for(i in seq_along(rev_sub)){
          length = .1, angle = 90, code = 3)
 }
 
-
 # trees of many sizes --------------------------------------------------------
-
-
 ##############################################################
 ## estimate rates for trees of different sizes and different
 ## levels of subsampling
 ##############################################################
-rm(list=ls())
-library(diversitree)
-source("supporting-functions.R")
 
 ## Run this over a range of conditions
 
@@ -87,9 +79,9 @@ for (i in seq_along(pars)){
 pars_list <- c(pars_list_diff, pars_list_same) # length = 20
 
 # ... over a range of biases towards dropping tips with state=1
-bias <- seq(0.25, 1, 0.25)
+bias <- seq(0.3, 0.7, 0.1)
 
-## just loop it. Get 100 results at each (produces 20*16*40*4*100iterations=2560000 observations)
+## just loop it. Get 100 results at each (produces 20*16*20*5*100iterations=3200000 observations)
 res <- data.frame()
 for (i in seq_along(t_size)){ # simulate over range of tree sizes
   for (j in seq_along(samp)){ # ...over range of sampling fractions
@@ -106,3 +98,6 @@ for (i in seq_along(t_size)){ # simulate over range of tree sizes
     }
   }
 }
+
+## check out the giant data frame
+View(res)
