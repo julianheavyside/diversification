@@ -1,55 +1,17 @@
 ##############################################################
 ## for MK models
 ##############################################################
+
+## packages ####
 rm(list=ls())
 library(diversitree)
 library(ggplot2)
-library(reshape2)
+# library(reshape2)
 library(dplyr)
+library(tidyr)
+library(readr)
+library(purrr)
 source("supporting-functions.R")
-
-
-#
-# trees of single size ----------------------------------------------------
-##############################################################
-# ability to estimate rate parameters when data is missing
-# for trees of a single size
-##############################################################
-
-## estimate rate parameter for multiple trees
-treenum <- 3000 # how many trees to simulate
-treesize <- 500 # how many taxa in each tree
-p_bias <- 0.5
-sub <- seq(0, treesize-(treesize/10), by=treesize/10)
-pars <- c(2, 1) # true rates for simulating trees
-
-## 
-res <- list()
-for(i in seq_along(sub)){
-  res[[i]] <- sapply(c(1:treenum), function(x) get_sim_pars(treesize=treesize, pars=pars, drop=sub[i]))
-}
-
-## the mean of all estimates, for each tier of tree subsampling
-mean_res <- lapply(res, mean)
-
-se <- lapply(res, standard.error)
-
-rev_sub <- sub[rev(order(sub))]
-
-par(mar = c(5, 6, 1, 1))
-## adjust ylim to accomodate large error bars
-plot(rev_sub, mean_res, ylim = c(0, range(mean_res)[2] + max(unlist(se))), xlab = "Number of taxa with known character state information", ylab = "Mean estimated rate of character evolution")
-
-## a horizontal line for the true rate of character evolution (use to make trees)
-abline(h = pars[1], lty = 5)
-
-## add standard error bars about each mean
-## plot flat arrows above and below each mean, each as long as the SE
-for(i in seq_along(rev_sub)){
-  arrows(rev_sub[i], mean_res[[i]] - se[[i]], 
-         rev_sub[i], mean_res[[i]] + se[[i]], 
-         length = .1, angle = 90, code = 3)
-}
 
 # trees of many sizes --------------------------------------------------------
 ##############################################################
@@ -102,8 +64,12 @@ for (i in seq_along(t_size)){ # simulate over range of tree sizes
   }
 }
 
+res <- read_csv("res.csv", col_types = "iiddddddidd")
+
+
+
 ## start wrangling; small subset example to work through potential manipulations
-sim_res <- dplyr::tbl_df(res)
+sim_res <- dplyr::tbl_df(res[-1])
 glimpse(sim_res)
 
 ## with treesize, sim par values, bias held constant
@@ -115,6 +81,27 @@ sim_res_500 <- sim_res %>%
 
 
 plot1 <- ggplot(sim_res_500, aes(samp_f, est_q01_samp)) + geom_point()
-print(plot1)
+plot1
 
 
+## nesting dataframes
+sim_res_nest <- sim_res %>% 
+  group_by(n, sim_q01, sim_q10, bias, samp_f, n_samp) %>% 
+  nest()
+
+sim_res_means <- sim_res_nest %>% 
+  mutate(avg = map(.$data, colMeans)) %>% 
+  mutate(df = map(.$avg, ~ data_frame(est_q01 = .x["est_q01"], 
+                   est_q10  = .x["est_q10"],
+                   est_q01_samp = .x["est_q01_samp"],
+                   est_q10_samp = .x["est_q10_samp"])))
+
+sim_res_means %>% 
+  unnest(df)
+
+sim_res_means$avg[1:4] %>% 
+  map(~ data_frame(est_q01 = .x["est_q01"], 
+                   est_q10  = .x["est_q10"],
+                   est_q01_samp = .x["est_q01_samp"],
+                   est_q10_samp = .x["est_q10_samp"])) %>% 
+  bind_rows
