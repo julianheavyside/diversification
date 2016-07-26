@@ -3,6 +3,9 @@
 ##############################################################
 rm(list=ls())
 library(diversitree)
+library(ggplot2)
+library(reshape2)
+library(dplyr)
 source("supporting-functions.R")
 
 
@@ -57,7 +60,7 @@ for(i in seq_along(rev_sub)){
 ## Run this over a range of conditions
 
 # simulate over range of tree sizes
-t_size <- seq(50, 1000, 50) # length = 20
+t_size <- seq(100, 1000, 100) # length = 10
 
 # ... over range of sampling fractions
 samp <- seq(1, .25, -.05) # length = 16
@@ -81,7 +84,7 @@ pars_list <- c(pars_list_diff, pars_list_same) # length = 20
 # ... over a range of biases towards dropping tips with state=1
 bias <- seq(0.3, 0.7, 0.1)
 
-## just loop it. Get 100 results at each (produces 20*16*20*5*100iterations=3200000 observations)
+## just loop it. Get 100 results at each
 res <- data.frame()
 for (i in seq_along(t_size)){ # simulate over range of tree sizes
   for (j in seq_along(samp)){ # ...over range of sampling fractions
@@ -99,5 +102,19 @@ for (i in seq_along(t_size)){ # simulate over range of tree sizes
   }
 }
 
-## check out the giant data frame
-View(res)
+## start wrangling; small subset example to work through potential manipulations
+sim_res <- dplyr::tbl_df(res)
+glimpse(sim_res)
+
+## with treesize, sim par values, bias held constant
+sim_res_500 <- sim_res %>% 
+    filter(n==500, sim_q01==0.5, sim_q10==0.5, bias==0.5) %>%
+    select(est_q01, samp_f, est_q01_samp) %>%
+    group_by(samp_f) %>%
+    summarise_each(funs(mean), est_q01, est_q01_samp)
+
+
+plot1 <- ggplot(sim_res_500, aes(samp_f, est_q01_samp)) + geom_point()
+print(plot1)
+
+
