@@ -1,12 +1,13 @@
 library(diversitree)
 
 ## produce bias to be used for subsampling
+## takes a list of binary numbers, and returns a list of probabilities to pass to sample()
+## 1 is assigned p, and 0 is assigned 1-p, allowing differential sampling probability dependent on tip state
 samp_bias <- function(d, p=.5){
   as.numeric(ifelse(d==1, p, 1-p))
 }
 
-## Simulate i datasets, drawing parameters from a distribution
-
+## simulates a tree with n taxa, distributes simulated character data throughout the tree, and returns a list with the tree, the data, and the rate parameter values used in the simulation
 simulate_mk2 <- function(n, r=c(0.1,0.1)){
   t <- tree.bd(c(1,0), max.taxa=n)
   d <- sim.character(t,r, model="mk2")
@@ -17,6 +18,7 @@ simulate_mk2 <- function(n, r=c(0.1,0.1)){
   }
 }
 
+## takes in a list produced by simulate_mk2, builds a likelihood for the data and the tree, caluculates a maximum likelihood estimate for the rate parameters, and stores them in a named list along with the true parameters and the number of taxa in the tree
 fit_mk2 <- function(x){
   l <- make.mk2(x$t,x$d)
   f <- find.mle(l, x.init=x$r)
@@ -26,6 +28,7 @@ fit_mk2 <- function(x){
   out
 }
 
+## subsamples the tree taxa, based on a given sampling fraction, drops them, and builds a new tree, with the associated data from the full tree, and lists them 
 sample_phydat <- function(x, s, b){
   n <- Ntip(x$t)
   prob <- samp_bias(x$d, p=b)
@@ -35,8 +38,8 @@ sample_phydat <- function(x, s, b){
   list(t=new_t, d=new_d, r=x$r)
 }
 
-## Using rejection algorithm to get rid of failures
-## Subsample with bias
+## Simulate i datasets, drawing parameters from a distribution
+## Subsample with bias, and use a rejection algorithm to get rid of failures (trees with only one character state)
 simulate_mk2_rsamp <- function(i, n, s, r=c(0.1,0.1), b=0.5){
   out <- data.frame()
   while(1){
