@@ -36,29 +36,24 @@ pars_list <- c(pars_list_diff, pars_list_same)
 bias <- seq(0.3, 0.7, 0.1)
 
 ## calculate number of observations produced by the simulation
-options(scipen=999) #get rid of scientific notation
 print(length(t_size) * length(samp) * length(pars_list) * length(bias) * 100) #interations
 
 ## now we are ready to start the simulation
 ## just loop it. Get 100 results at each
-source("multi-tree-functions.R")
+source("simulation-functions.R")
 
-res <- data.frame() #store our simulated data in a data.frame
-for (i in seq_along(t_size)){ # simulate over range of tree sizes
-  for (j in seq_along(samp)){ # ...over range of sampling fractions
-    for (k in seq_along(pars_list)){ # ...over range of parameter values
-      for (l in seq_along(bias)){ # ...over a range of biases towards state=1
-        print(c(i,j,k,l))
-        out <- simulate_mk2_rsamp(i=100, 
-                                  n=t_size[i], 
-                                  s=samp[j], 
-                                  r=pars_list[[k]], 
-                                  b=bias[l])
-        res <- rbind(res,out)
-      }
+res <- data.frame() ## store our simulated data in a data.frame
+for (j in seq_along(t_size)){ ## simulate over range of tree sizes
+  for (k in seq_along(samp)){ ## ...over range of sampling fractions
+    for (l in seq_along(pars_list)){ ## ...over range of parameter values
+      for (m in seq_along(bias)){ ## ...over a range of biases towards state=1
+        print(c(j,k,l,m))
+        out <- simulate_mk2_rsamp(i=100, n=t_size[j], s=samp[k], r=pars_list[[l]], b=bias[m])
+        res <- rbind(res,out)}
     }
   }
 }
+
 
 ## save simulated dataset as a csv in the working dir
 write.csv(res, "res.csv")
@@ -66,47 +61,22 @@ write.csv(res, "res.csv")
 # tidying ---------------------------------------------------------
 source("tidying-functions.R")
 
-## load simulated data set, using speedy readr magic (
+## load simulated data set, using speedy readr magic
 res <- read_csv("res.csv", col_types = "iiddddddidd")
+res <- dplyr::tbl_df(res[-1]) # excel added a index column, so remove it
+glimpse(res)
 
-
-## quick example; small subset to work through potential manipulations
-sim_res <- dplyr::tbl_df(res[-1])
-glimpse(sim_res)
-
-## with treesize, sim par values, bias held constant
-sim_res_500 <- sim_res %>% 
-    filter(n==500, sim_q01==0.5, sim_q10==0.5, bias==0.5) %>%
-    select(est_q01, samp_f, est_q01_samp) %>%
-    group_by(samp_f) %>%
-    summarise_each(funs(mean), est_q01, est_q01_samp)
-
-## nesting dataframes using purrr
-sim_res_nest <- sim_res %>% 
-  group_by(n, sim_q01, sim_q10, bias, samp_f, n_samp) %>% 
-  nest()
-
-sim_res_means <- sim_res_nest %>% 
-  mutate(avg = map(.$data, colMeans)) %>% 
-  mutate(df = map(.$avg, ~ data_frame(est_q01 = .x["est_q01"], 
-                                      est_q10  = .x["est_q10"],
-                                      est_q01_samp = .x["est_q01_samp"],
-                                      est_q10_samp = .x["est_q10_samp"])))
-
-sim_res_means %>% 
-  unnest(df)
-
-sim_res_means$avg[1:4] %>% 
-  map(~ data_frame(est_q01 = .x["est_q01"], 
-                   est_q10  = .x["est_q10"],
-                   est_q01_samp = .x["est_q01_samp"],
-                   est_q10_samp = .x["est_q10_samp"])) %>% 
-  bind_rows
+## select desired levels of tree size, bias, and rate parameters to filter data for plotting with facets
+sub <- sub.res(res)
+  
+ggplot(sub, aes(samp_f, est_q01_samp, color = bias)) +
+  geom_point() +
+  facet_grid(sim_q01 ~ n, scales = "free_y")
 
 # plotting ----------------------------------------------------------------
 source("plotting-functions.R")
 
-plot1 <- ggplot(sim_res_500, aes(samp_f, est_q01_samp)) + geom_point()
-plot1
+
+
 
 
