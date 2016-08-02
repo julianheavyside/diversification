@@ -69,13 +69,13 @@ glimpse(res)
 ## select desired levels of tree size, bias, and rate parameters to filter data for plotting with facets
 sub <- sub.res(res)
   
-ggplot(sub, aes(samp_f, est_q01_samp, color = bias)) +
-  geom_point() +
-  facet_grid(sim_q01 ~ n, scales = "free_y")
 
 # plotting ----------------------------------------------------------------
 source("plotting-functions.R")
 
+ggplot(sub, aes(samp_f, est_q01_samp, color = bias)) +
+  geom_point() +
+  facet_grid(sim_q01 ~ n, scales = "free_y")
 
 
 
