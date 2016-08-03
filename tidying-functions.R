@@ -7,10 +7,10 @@ library(purrr)
 ## still thinking about this...
 
 ## select desired levels of tree size, bias, and rate parameters 
-sub.res <- function(data, 
+conds.for.filter <- function(data, 
                     tree_cond = c(100, 400, 700), 
                     bias_cond = c(0.3, 0.5, 0.7), 
-                    sim_q_cond = c(0.1, 0.5, 1.0),
+                    sim_q_cond = c(0.1, 0.5, 0.9),
                     samp_f_cond = c(seq(0.1:1.0, by = 0.1))){
   data %>% 
     filter(n %in% tree_cond,
