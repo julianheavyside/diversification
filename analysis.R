@@ -69,25 +69,20 @@ glimpse(res)
 source("tidying-functions.R")
 
 ## select desired levels of tree size, bias, and rate parameters to filter data for plotting with facets
-sub <- subset.conditions(res)
-  
-ex <- res %>% 
-  filter(n == 500,
-         sim_q01 == 0.1,
-         sim_q01 == sim_q10) %>%
-  group_by(samp_f, bias) %>% 
+
+fil_res <- res %>% 
+  filter(n %in% c(500, 600, 700),
+         bias %in% c(0.3, 0.5, 0.7), 
+         sim_q01 %in% c(0.1, 0.5, 0.9),
+         sim_q01 == sim_q01) %>% 
+  group_by(n, bias, sim_q01, samp_f) %>% 
+  # mutate(error = sim_q01 - est_q01_samp)
   summarise_each(funs(mean), est_q01_samp)
-  
 
-ggplot(ex, aes(samp_f, est_q01_samp, colour = bias)) +
+
+ggplot(fil_res, aes(samp_f, est_q01_samp, colour = bias)) +
   geom_point() +
-  geom_hline(yintercept = 0.1, linetype = "dashed")
-  
-
-
-
-
-
+  facet_grid(sim_q01 ~ n, scales = "free_y")
 
 
 ## some of Andrew's wrangling advice incorporated below
