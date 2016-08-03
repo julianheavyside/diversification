@@ -74,7 +74,8 @@ saveRDS(res, file = "res.Rda")
 # glimpse(res)
 
 ## load in second sim run data frame, if working with that one
-res <- readRDS(file = "res.Rda")
+library(dplyr)
+res <- readRDS(file = "../res.Rda")
 res <- dplyr::tbl_df(res)
 #order bias variable for ggplot colours
 res$bias <- ordered(res$bias, levels = c(unique(res$bias))) 
@@ -87,9 +88,7 @@ source("tidying-functions.R")
 ## select desired levels of tree size, bias, and rate parameters to filter data for plotting with facets
 
 fil_res <- res %>% 
-  filter(n %in% c(500, 600, 700),
-         bias %in% c(0.3, 0.5, 0.7), 
-         sim_q01 %in% c(0.1, 0.5, 0.9),
+  filter(sim_q01 %in% c(0.1, 0.5, 1.0),
          sim_q01 == sim_q01) %>% 
   group_by(n, bias, sim_q01, samp_f) %>% 
   # mutate(error = sim_q01 - est_q01_samp)
