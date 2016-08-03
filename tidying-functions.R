@@ -15,7 +15,7 @@ filter_conds <- function(data,
     filter(n %in% tree_cond,
            bias %in% bias_cond,
            sim_q01 %in% sim_q_cond)
-    mutate_(error_q01 = sim_q01 - est_q01_samp)
+    mutate(error_q01 = sim_q01 - est_q01_samp)
   }
 
 
