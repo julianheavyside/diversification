@@ -2,6 +2,7 @@ library(dplyr)
 library(tidyr)
 library(readr)
 library(purrr)
+library(ggplot2)
 
 ## standardize dplyr NSE features to allow data frame values and column names to be input as arguments
 ## still thinking about this...
