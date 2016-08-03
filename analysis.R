@@ -1,7 +1,7 @@
 rm(list=ls())
 ## for MK models
 
-# simulation --------------------------------------------------------
+## simulation --------------------------------------------------------
 ## estimate rates for trees of different sizes and different levels of subsampling
 ## run over a range of conditions:
 
@@ -58,17 +58,73 @@ for (j in seq_along(t_size)){ ## simulate over range of tree sizes
 ## save simulated dataset as a csv in the working dir
 write.csv(res, "res.csv")
 
-# tidying ---------------------------------------------------------
-source("tidying-functions.R")
-
+## load saved simulation data -------------------------------------------
 ## load simulated data set, using speedy readr magic
 res <- read_csv("res.csv", col_types = "iiddddddidd")
+res$bias <- ordered(res$bias, levels = c(unique(res$bias)))
 res <- dplyr::tbl_df(res[-1]) # excel added a index column, so remove it
 glimpse(res)
 
+## tidying ---------------------------------------------------------
+source("tidying-functions.R")
+
 ## select desired levels of tree size, bias, and rate parameters to filter data for plotting with facets
-sub <- sub.res(res)
+sub <- subset.conditions(res)
   
+ex <- res %>% 
+  filter(n == 500,
+         sim_q01 == 0.1,
+         sim_q01 == sim_q10) %>%
+  group_by(samp_f, bias) %>% 
+  summarise_each(funs(mean), est_q01_samp)
+  
+
+ggplot(ex, aes(samp_f, est_q01_samp, colour = bias)) +
+  geom_point() +
+  geom_hline(yintercept = 0.1, linetype = "dashed")
+  
+
+
+
+
+
+
+
+## some of Andrew's wrangling advice incorporated below
+res_nest <- res %>%
+  mutate(error_q01 = est_q01_samp - sim_q01,
+         error_q10 = est_q10_samp - sim_q10) %>%
+  group_by(n, sim_q01, sim_q10, bias, samp_f, n_samp) %>%
+  nest() %>%
+
+  res_means <- res_nest %>%
+  mutate(avg = map(.$data, colMeans)) %>%
+  mutate(df = map(.$avg, ~ data_frame(est_q01 = .x["est_q01"],
+                                      est_q10  = .x["est_q10"],
+                                      est_q01_samp = .x["est_q01_samp"],
+                                      est_q10_samp = .x["est_q10_samp"]))) %>%
+
+res_means %>%
+  unnest(df)
+
+res_means$avg[1:4] %>%
+  map(~ data_frame(est_q01 = .x["est_q01"],
+                   est_q10  = .x["est_q10"],
+                   est_q01_samp = .x["est_q01_samp"],
+                   est_q10_samp = .x["est_q10_samp"])) %>%
+  bind_rows
+
+## add new variables for error between estimate and true rate
+res_nest <- res %>%
+  mutate(error_q01 = est_q01_samp - sim_q01,
+         error_q10 = est_q10_samp - sim_q10) %>%
+  group_by(n, sim_q01, sim_q10, bias, samp_f, n_samp) %>%
+  nest() %>%
+
+  res_means <- res_nest %>%
+  mutate(avg = map(.$data, colMeans))
+
+head(res_means)
 
 # plotting ----------------------------------------------------------------
 source("plotting-functions.R")
