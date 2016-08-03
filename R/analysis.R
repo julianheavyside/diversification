@@ -2,7 +2,7 @@ rm(list=ls())
 ## for MK models
 
 ## simulation --------------------------------------------------------
-source("simulation-functions.R")
+source("R/simulation-functions.R")
 ## estimate rates for trees of different sizes and different levels of subsampling
 ## run over a range of conditions:
 
@@ -75,7 +75,7 @@ saveRDS(res, file = "res.Rda")
 
 ## load in second sim run data frame, if working with that one
 library(dplyr)
-res <- readRDS(file = "../res.Rda")
+res <- readRDS(file = "../data/res.Rda")
 res <- dplyr::tbl_df(res)
 #order bias variable for ggplot colours
 res$bias <- ordered(res$bias, levels = c(unique(res$bias))) 
@@ -83,7 +83,7 @@ glimpse(res)
 
 
 ## tidying ---------------------------------------------------------
-source("tidying-functions.R")
+source("R/tidying-functions.R")
 
 ## select desired levels of tree size, bias, and rate parameters to filter data for plotting with facets
 
@@ -137,7 +137,7 @@ res_nest <- res %>%
 head(res_means)
 
 # plotting ----------------------------------------------------------------
-source("plotting-functions.R")
+source("R/plotting-functions.R")
 
 ggplot(sub, aes(samp_f, est_q01_samp, color = bias)) +
   geom_point() +
