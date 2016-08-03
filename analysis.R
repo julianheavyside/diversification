@@ -2,22 +2,26 @@ rm(list=ls())
 ## for MK models
 
 ## simulation --------------------------------------------------------
+source("simulation-functions.R")
 ## estimate rates for trees of different sizes and different levels of subsampling
 ## run over a range of conditions:
 
 ## simulate over range of tree sizes
-t_size <- seq(100, 1000, 100)
+t_size <- c(200, 400, 600, 800)
+t_size
 
 ## ... over range of sampling fractions
 samp <- seq(1, .25, -.1)
+samp
 
 ## ... over range of parameter (q01 and q10) values
 ## roundabout way to make a long list of parameter combinations (for situations when q01=q10, when they aren't equal, when they are large or small, etc) 
 ## multidimensional parameter space
 pars_list_diff <- list()
 pars_list_same <- list()
-pars <- seq(0.1, 1, by=0.1)
+pars <- c(0.1, 0.25, 0.5, 0.75, 1) # can't use rate=0; trees fail
 rev_pars <- rev(pars)
+pars
 
 ## different values for q01 and q10
 for (i in seq_along(pars)){
@@ -31,17 +35,18 @@ for (i in seq_along(pars)){
 
 ## join both lists to make a full pars_list over a range of values, for situations with same and different values
 pars_list <- c(pars_list_diff, pars_list_same) 
+pars_list <- pars_list[-8] # don't need two sets of q01=q10=0.5, so remove one (see list before and after to understand)
+pars_list
 
 ## ... over a range of biases towards dropping tips with state=1
-bias <- seq(0.3, 0.7, 0.1)
+bias <- c(0.3, 0.5, 0.7)
+bias
 
 ## calculate number of observations produced by the simulation
-print(length(t_size) * length(samp) * length(pars_list) * length(bias) * 100) #interations
+print(length(t_size) * length(samp) * length(pars_list) * length(bias) * 100)
 
 ## now we are ready to start the simulation
 ## just loop it. Get 100 results at each
-source("simulation-functions.R")
-
 res <- data.frame() ## store our simulated data in a data.frame
 for (j in seq_along(t_size)){ ## simulate over range of tree sizes
   for (k in seq_along(samp)){ ## ...over range of sampling fractions
@@ -56,7 +61,7 @@ for (j in seq_along(t_size)){ ## simulate over range of tree sizes
 
 
 ## save simulated dataset as a csv in the working dir
-write.csv(res, "res.csv")
+write.csv(res, "res2.csv")
 
 ## load saved simulation data -------------------------------------------
 ## load simulated data set, using speedy readr magic
