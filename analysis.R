@@ -60,15 +60,26 @@ for (j in seq_along(t_size)){ ## simulate over range of tree sizes
 }
 
 
-## save simulated dataset as a csv in the working dir
+## save first simulated dataset as a csv in the working dir
 write.csv(res, "res2.csv")
 
+## for my second run, with limited parameter range, saved as data frame
+saveRDS(res, file = "res.Rda")
+
 ## load saved simulation data -------------------------------------------
-## load simulated data set, using speedy readr magic
-res <- read_csv("res.csv", col_types = "iiddddddidd")
-res$bias <- ordered(res$bias, levels = c(unique(res$bias)))
-res <- dplyr::tbl_df(res[-1]) # excel added a index column, so remove it
+## load first simulated data set (which I foolishly saved as a csv), using speedy readr magic
+# res <- read_csv("res.csv", col_types = "iiddddddidd")
+# res$bias <- ordered(res$bias, levels = c(unique(res$bias)))
+# res <- dplyr::tbl_df(res[-1]) # excel added a index column, so remove it
+# glimpse(res)
+
+## load in second sim run data frame, if working with that one
+res <- readRDS(file = "res.Rda")
+res <- dplyr::tbl_df(res)
+#order bias variable for ggplot colours
+res$bias <- ordered(res$bias, levels = c(unique(res$bias))) 
 glimpse(res)
+
 
 ## tidying ---------------------------------------------------------
 source("tidying-functions.R")
