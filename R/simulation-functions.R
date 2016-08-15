@@ -28,6 +28,16 @@ fit_mk2 <- function(x){
   out
 }
 
+fit_bisse <- function(x){
+  l <- make.bisse(x$t,x$d, sampling.f = c(0.5, 0.5))
+  l_mk2 <- constrain(lik, lamda1~lambda0, mu1~0, mu0~0)
+  f <- find.mle(l_mk2, x.init=c(x$r, 1))
+  out <- c(Ntip(x$t), x$r[1], x$r[2],
+           f$par["q01"], f$par["q10"])
+  names(out) <- c("n", "sim_q01","sim_q10", "est_q01", "est_q10")
+  out
+}
+
 ## subsamples the tree taxa, based on a given sampling fraction, drops them, and builds a new tree, with the associated data from the full tree, and lists them 
 sample_phydat <- function(x, s, b){
   n <- Ntip(x$t)
