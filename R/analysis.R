@@ -2,7 +2,7 @@ rm(list=ls())
 ## for MK models
 
 ## simulation --------------------------------------------------------
-source("R/simulation-functions.R")
+source("simulation-functions.R")
 ## estimate rates for trees of different sizes and different levels of subsampling
 ## run over a range of conditions:
 
@@ -74,31 +74,77 @@ saveRDS(res, file = "res.Rda")
 # glimpse(res)
 
 ## load in second sim run data frame, if working with that one
-library(dplyr)
-res <- readRDS(file = "../data/res.Rda")
+res <- readRDS(file = "../results/output/res.Rda")
 res <- dplyr::tbl_df(res)
 #order bias variable for ggplot colours
 res$bias <- ordered(res$bias, levels = c(unique(res$bias))) 
-glimpse(res)
-
+dplyr::glimpse(res)
 
 ## tidying ---------------------------------------------------------
-source("R/tidying-functions.R")
+source("tidying-functions.R")
 
 ## select desired levels of tree size, bias, and rate parameters to filter data for plotting with facets
 
-fil_res <- res %>% 
-  filter(sim_q01 %in% c(0.1, 0.5, 1.0),
-         sim_q01 == sim_q01) %>% 
+# fil_res <- res %>% 
+#   filter(sim_q01 %in% c(0.1, 0.5, 1.0),
+#          sim_q01 == sim_q10) %>% 
+#   group_by(n, bias, sim_q01, samp_f) %>% 
+#   # mutate(error = sim_q01 - est_q01_samp)
+#   summarise_each(funs(mean), est_q01_samp)
+# 
+# 
+# ggplot(fil_res, aes(samp_f, est_q01_samp, colour = bias)) +
+#   geom_point() +
+#   facet_grid(sim_q01 ~ n, scales = "free_y")
+
+## filter within ggplot
+dat <- res %>% 
   group_by(n, bias, sim_q01, samp_f) %>% 
-  # mutate(error = sim_q01 - est_q01_samp)
   summarise_each(funs(mean), est_q01_samp)
 
 
-ggplot(fil_res, aes(samp_f, est_q01_samp, colour = bias)) +
-  geom_point() +
-  facet_grid(sim_q01 ~ n, scales = "free_y")
+# plotting ----------------------------------------------------------------
+source("plotting-functions.R")
 
+plots <- list()
+q01s <- c(0.1, 0.5, 1)
+ns <- c(100, 400, 800)
+for(i in seq_along(ns)){
+  for(j in seq_along(q01s)){
+    p <- plot_by_filter(dat, n.taxa = ns[i], q01 = q01s[j])
+    plots <- c(plots, p)
+  }
+}
+print(plots)
+
+p <- plot_by_filter(dat, n.taxa = ns[3], q01 = q01s[1])
+
+test <- plot_by_filter(dat, q01 = 0.1, n.taxa = 100)
+print(test)
+
+p <- ggplot(subset(dat, sim_q01 == 0.1),
+            aes(x = samp_f, y = est_q01_samp, colour = bias)) +
+  geom_point() +
+  geom_smooth() +
+  facet_grid(.~n) +
+  geom_hline(yintercept=0.1, linetype = "dashed") +
+  labs(x = "Proportion of tips remaining", y = "Parameter estimate")
+  
+print(p)
+
+# p <- ggplot(subset(res, sim_q01 == 0.1),
+#             aes(x = samp_f, y = est_q01_samp, colour = bias)) +
+#   geom_point()
+#   stat_smooth(data = res) +
+#   facet_grid(. ~ n) +
+#   geom_hline(yintercept=0.1, linetype = "dashed") +
+#   ylim(0.05, 0.2)
+
+
+
+print(p)
+
+# scratch pad -------------------------------------------------------------
 
 ## some of Andrew's wrangling advice incorporated below
 res_nest <- res %>%
@@ -136,8 +182,7 @@ res_nest <- res %>%
 
 head(res_means)
 
-# plotting ----------------------------------------------------------------
-source("R/plotting-functions.R")
+
 
 ggplot(sub, aes(samp_f, est_q01_samp, color = bias)) +
   geom_point() +
