@@ -122,26 +122,34 @@ Q01s <- c(0.1, 0.5, 1)
 #   }
 # }
 
-
+blankPlot <- ggplot() + geom_blank(aes(1, 1)) + cowplot::theme_nothing()
 
 ## do it manually for now
 grid.arrange(textGrob("n = 200"),
              textGrob("n = 400"),
              textGrob("n = 800"),
+             blankPlot,
              fil_plot(200, 0.1), 
              fil_plot(400, 0.1),
              fil_plot(800, 0.1),
+             textGrob("Simulated\ntrees using\nq01=0.1\n(Dashed\nline)", gp = gpar(fontsize = 10)),
              fil_plot(200, 0.5),
              fil_plot(400, 0.5),
              fil_plot(800, 0.5),
+             textGrob("q01=0.5", gp = gpar(fontsize = 10)),
+             fil_plot(200, 0.75), 
+             fil_plot(400, 0.75),
+             fil_plot(800, 0.75),
+             textGrob("q01=0.75", gp = gpar(fontsize = 10)),
              fil_plot(200, 1),
              fil_plot(400, 1),
              fil_plot(800, 1),
-             ncol = 3,
-             heights = c(1, rep(12, 3)),
+             textGrob("q01=1.0", gp = gpar(fontsize = 10)),
+             ncol = 4,
+             widths = c(rep(12, 3), 5),
+             heights = c(1, rep(12, 4)),
              bottom="Proportion of tips remaining", 
              left="Estimated parameter (q01)")
-
 grid.rect(gp=gpar(fill=NA))
 
 # scratch pad -------------------------------------------------------------
