@@ -105,44 +105,44 @@ dat <- res %>%
 
 # plotting ----------------------------------------------------------------
 source("plotting-functions.R")
+fil_plot(400, 0.1)
 
-plots <- list()
-q01s <- c(0.1, 0.5, 1)
-ns <- c(100, 400, 800)
-for(i in seq_along(ns)){
-  for(j in seq_along(q01s)){
-    p <- plot_by_filter(dat, n.taxa = ns[i], q01 = q01s[j])
-    plots <- c(plots, p)
-  }
-}
-print(plots)
+## make 9 plots: for n = 100, 400, 800, and q01 = 0.1, 0.5, 1
+## make a list of these combinations for subsetting the original dataset
 
-p <- plot_by_filter(dat, n.taxa = ns[3], q01 = q01s[1])
+Ns <- c(200, 400, 800)
+Q01s <- c(0.1, 0.5, 1)
 
-test <- plot_by_filter(dat, q01 = 0.1, n.taxa = 100)
-print(test)
-
-p <- ggplot(subset(dat, sim_q01 == 0.1),
-            aes(x = samp_f, y = est_q01_samp, colour = bias)) +
-  geom_point() +
-  geom_smooth() +
-  facet_grid(.~n) +
-  geom_hline(yintercept=0.1, linetype = "dashed") +
-  labs(x = "Proportion of tips remaining", y = "Parameter estimate")
-  
-print(p)
-
-# p <- ggplot(subset(res, sim_q01 == 0.1),
-#             aes(x = samp_f, y = est_q01_samp, colour = bias)) +
-#   geom_point()
-#   stat_smooth(data = res) +
-#   facet_grid(. ~ n) +
-#   geom_hline(yintercept=0.1, linetype = "dashed") +
-#   ylim(0.05, 0.2)
+## this isn't working
+# plots <- list()
+# for(i in seq_along(Ns)){
+#   for(j in seq_along(Q01s)){
+#     p <- fil_plot(N = Ns[i], Q01 = Q01s[j])
+#     plots <- list(plots, list(p))
+#   }
+# }
 
 
 
-print(p)
+## do it manually for now
+grid.arrange(textGrob("n = 200"),
+             textGrob("n = 400"),
+             textGrob("n = 800"),
+             fil_plot(200, 0.1), 
+             fil_plot(400, 0.1),
+             fil_plot(800, 0.1),
+             fil_plot(200, 0.5),
+             fil_plot(400, 0.5),
+             fil_plot(800, 0.5),
+             fil_plot(200, 1),
+             fil_plot(400, 1),
+             fil_plot(800, 1),
+             ncol = 3,
+             heights = c(1, rep(12, 3)),
+             bottom="Proportion of tips remaining", 
+             left="Estimated parameter (q01)")
+
+grid.rect(gp=gpar(fill=NA))
 
 # scratch pad -------------------------------------------------------------
 
