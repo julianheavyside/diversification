@@ -2,9 +2,13 @@
 .Rhistory
 .RData
 .Ruserdata
+.DS_Store
 sampling-effects.R
 treethinkers-tutorial.R
 scratch.R
 zoops.R
 res.csv
-.DS_Store
+single-size-tree-sim.R
+analysis.R
+tidying-functions.R
+supporting-functions.R
