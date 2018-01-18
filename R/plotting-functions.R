@@ -15,14 +15,14 @@ fil_plot <- function(N, Q01){
     
     ## format the legend (see theme() below as well)
     scale_color_discrete(guide = guide_legend(title = NULL,
-                                             direction = "horizontal", 
-                                             label.position = "bottom",
-                                             keyheight = 0.4)) +
+                                              direction = "horizontal", 
+                                              label.position = "bottom",
+                                              keyheight = 0.4)) +
     theme(axis.title.x = element_blank(),
           axis.title.y = element_blank(),
           legend.text = element_text(size = 7),
           legend.background = element_rect(fill = NA),
           legend.justification = c(1, 1),
           legend.position = c(1, 1)) 
-          
+  
 }

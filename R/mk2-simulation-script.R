@@ -1,5 +1,5 @@
 rm(list=ls())
-source("simulation-functions.R")
+source("mk2-simulation-functions.R")
 ## for MK models
 
 ## Given a range of parameters, including treesize, character transition rates, and bias, the simulation builds a tree, assigns a binary character state to each tip, builds a likelihood function for the tree given the state data, produces a maximum likelihood estimate, and returns estimates of the rates of character transition rate.
